@@ -10,6 +10,8 @@ import (
 	"github.com/davecgh/dcrstakesim/internal/tickettreap"
 )
 
+var s1 float64
+
 // calcNextStakeDiffProposal1 returns the required stake difficulty (aka ticket
 // price) for the block after the current tip block the simulator is associated
 // with using the algorithm proposed by chappjc.
@@ -43,7 +45,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	// Previous window pool size and ticket price
 	p, q := s.previousPoolSizeAndDiff(nextHeight)
 	// Return the existing ticket price for the first interval.
-	if p == 0 {
+	if p == 0 || q == 0 {
 		return curDiff
 	}
 
@@ -57,7 +59,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	del := float64(t-c) / float64(t)
 
 	// Price damper (always positive)
-	g := 0.25
+	g := s1
 	absPriceDeltaLast := math.Abs(float64(curDiff-q) / float64(q))
 	m := g * math.Exp(-absPriceDeltaLast)
 
