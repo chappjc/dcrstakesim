@@ -404,6 +404,9 @@ func main() {
 	case "3":
 		sim.nextTicketPriceFunc = sim.calcNextStakeDiffProposal3
 		pfResultsName = "Proposal 3"
+	case "6":
+		sim.nextTicketPriceFunc = calcNextStakeDiffProposalJ
+		pfResultsName = "Proposal 6"
 	default:
 		fmt.Printf("%q is not a valid ticket price func name\n",
 			*pfName)
