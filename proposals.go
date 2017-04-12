@@ -22,7 +22,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	}
 	stakeDiffStartHeight := int32(s.params.CoinbaseMaturity) + 1
 	if nextHeight < stakeDiffStartHeight {
-		return 4 * 1e8 // s.params.MinimumStakeDiff
+		return 8 * 1e8 // s.params.MinimumStakeDiff
 	}
 
 	// Return the previous block's difficulty requirements if the next block
@@ -57,7 +57,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 
 	// Price damper (always positive)
 	absPriceDeltaLast := math.Abs(float64(curDiff-q) / float64(q))
-	m := s1 * math.Exp(-absPriceDeltaLast*0.001)
+	m := s1 * math.Exp(-absPriceDeltaLast)
 
 	// Adjust
 	pctChange := m * del
@@ -73,7 +73,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 		price = 4 * 1e8 // s.params.MinimumStakeDiff
 	}
 
-	fmt.Println(c, c-t, m*del*float64(curDiff), m*del, pctChange, n, price)
+	fmt.Println(c, c-t, m*del*float64(curDiff), pctChange, price)
 
 	return price
 }
