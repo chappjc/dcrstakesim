@@ -20,9 +20,10 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	if s.tip != nil {
 		nextHeight = s.tip.height + 1
 	}
+	altMinDiff := int64(4)
 	stakeDiffStartHeight := int32(s.params.CoinbaseMaturity) + 1
 	if nextHeight < stakeDiffStartHeight {
-		return 4 * 1e8 // s.params.MinimumStakeDiff
+		return altMinDiff * 1e8 // s.params.MinimumStakeDiff
 	}
 
 	// Return the previous block's difficulty requirements if the next block
@@ -47,13 +48,13 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	}
 
 	// Pool velocity (normalized, always non-negative)
-	A := -int64(s.params.TicketsPerBlock) * intervalSize
+	//A := -int64(s.params.TicketsPerBlock) * intervalSize
 	//B := (int64(s.params.MaxFreshStakePerBlock) - int64(s.params.TicketsPerBlock)) * intervalSize
 	//D := c - p
 	//slowDown := (1 - math.Abs(float64(D)) / float64(B+A))
 
 	// Pool force (multiple of target, signed)
-	del := float64(c-t-A) / float64(t) / float64(s.params.MaxFreshStakePerBlock)
+	del := float64(c-t) / float64(t) / float64(s.params.MaxFreshStakePerBlock)
 
 	// Price damper (always positive)
 	absPriceDeltaLast := math.Abs(float64(curDiff-q) / float64(q))
@@ -69,8 +70,8 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	n := float64(curDiff) * (1.0 + pctChange)
 
 	price := int64(n)
-	if price < 4*1e8 /* s.params.MinimumStakeDiff */ {
-		price = 4 * 1e8 // s.params.MinimumStakeDiff
+	if price < altMinDiff*1e8 /* s.params.MinimumStakeDiff */ {
+		price = altMinDiff * 1e8 // s.params.MinimumStakeDiff
 	}
 
 	fmt.Println(c, c-t, m*del*float64(curDiff), pctChange, price)
