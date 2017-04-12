@@ -20,7 +20,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	if s.tip != nil {
 		nextHeight = s.tip.height + 1
 	}
-	altMinDiff := int64(4)
+	altMinDiff := int64(2)
 	stakeDiffStartHeight := int32(s.params.CoinbaseMaturity) + 1
 	if nextHeight < stakeDiffStartHeight {
 		return altMinDiff * 1e8 // s.params.MinimumStakeDiff
