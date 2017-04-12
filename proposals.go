@@ -8,6 +8,8 @@ import (
 	"math"
 
 	"github.com/davecgh/dcrstakesim/internal/tickettreap"
+	"fmt"
+	"os"
 )
 
 var s1 float64
@@ -45,18 +47,23 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	// Previous window pool size and ticket price
 	p, q := s.previousPoolSizeAndDiff(nextHeight)
 	// Return the existing ticket price for the first interval.
-	if p == 0 || q == 0 {
+	if p == 0 {
 		return curDiff
 	}
 
 	// Pool velocity (normalized, always non-negative)
-	A := int64(s.params.TicketsPerBlock) * intervalSize
+	A := -int64(s.params.TicketsPerBlock) * intervalSize
 	B := (int64(s.params.MaxFreshStakePerBlock) - int64(s.params.TicketsPerBlock)) * intervalSize
 	D := c - p
-	v := float64(D-A) / float64(B-A)
+	if D < A || D > B {
+		fmt.Println(" ", D, " ", c, " ", p)
+		os.Exit(1)
+	}
+
+	v := math.Abs(float64(D-A) / float64(B-A))
 
 	// Pool force (multiple of target, signed)
-	del := float64(t-c) / float64(t)
+	del := float64(c-t) / float64(t)
 
 	// Price damper (always positive)
 	g := s1
@@ -64,12 +71,25 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	m := g * math.Exp(-absPriceDeltaLast)
 
 	// Adjust
-	n := float64(curDiff) * (1 + m*v*del)
+	n := float64(curDiff) * (1.0 + m*v*del)
 
 	price := int64(n)
 	if price < s.params.MinimumStakeDiff {
 		price = s.params.MinimumStakeDiff
 	}
+
+	// if s.tip.height > int32(6400) {
+	// 	fmt.Println("\n", D, " ", c, " ", p)
+	// 	fmt.Println(price, " ", curDiff)
+	// 	fmt.Println(v)
+	// 	fmt.Println(absPriceDeltaLast)
+	// 	fmt.Println(m)
+	// 	fmt.Println(t, " ", c, " ", t - c)
+	// 	fmt.Println(del)
+	// 	fmt.Println(m*v*del)
+	// 	os.Exit(1)
+	// }
+
 	return price
 }
 
