@@ -41,7 +41,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	c := int64(s.tip.poolSize)
 	t := int64(s.params.TicketsPerBlock) * int64(s.params.TicketPoolSize)
 	// Previous window pool size and ticket price
-	p, q := s.previousPoolSizeAndDiff(nextHeight)
+	p, q := s.poolSizeAndDiff(s.tip.height - int32(intervalSize))
 	// Return the existing ticket price for the first interval.
 	if p == 0 {
 		return curDiff
@@ -58,7 +58,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 
 	// Price damper (always positive)
 	absPriceDeltaLast := math.Abs(float64(curDiff-q) / float64(q))
-	m := s1 * math.Exp(-absPriceDeltaLast)
+	m := s1 * math.Exp(-absPriceDeltaLast*10)
 
 	// Adjust
 	pctChange := m * del
@@ -74,13 +74,13 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 		price = altMinDiff * 1e8 // s.params.MinimumStakeDiff
 	}
 
-	fmt.Println(c, c-t, m*del*float64(curDiff), pctChange, price)
+	fmt.Println(c, c-t, m, curDiff, q, absPriceDeltaLast, m*del*float64(curDiff), pctChange, price)
 
 	return price
 }
 
-func (s *simulator) previousPoolSizeAndDiff(nextHeight int32) (int64, int64) {
-	node := s.ancestorNode(s.tip, nextHeight-int32(s.params.StakeDiffWindowSize), nil)
+func (s *simulator) poolSizeAndDiff(height int32) (int64, int64) {
+	node := s.ancestorNode(s.tip, height, nil)
 	if node != nil {
 		return int64(node.poolSize), node.ticketPrice
 	}
