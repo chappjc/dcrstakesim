@@ -22,7 +22,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	}
 	stakeDiffStartHeight := int32(s.params.CoinbaseMaturity) + 1
 	if nextHeight < stakeDiffStartHeight {
-		return 8 * 1e8 // s.params.MinimumStakeDiff
+		return 4 * 1e8 // s.params.MinimumStakeDiff
 	}
 
 	// Return the previous block's difficulty requirements if the next block
