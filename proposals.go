@@ -12,6 +12,7 @@ import (
 )
 
 var s1 float64
+var minStakeDiff int64
 
 func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	// Stake difficulty before any tickets could possibly be purchased is
@@ -20,7 +21,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	if s.tip != nil {
 		nextHeight = s.tip.height + 1
 	}
-	altMinDiff := int64(4) * 1e8 // normally s.params.MinimumStakeDiff
+	altMinDiff := minStakeDiff * 1e8 // normally s.params.MinimumStakeDiff
 	stakeDiffStartHeight := int32(s.params.CoinbaseMaturity) + 1
 	if nextHeight < stakeDiffStartHeight {
 		return altMinDiff
