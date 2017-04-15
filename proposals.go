@@ -49,8 +49,8 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	}
 
 	// Useful ticket counts are A (-5 * 144) and B (15 * 144)
-	// A := -int64(s.params.TicketsPerBlock) * intervalSize
-	//B := (int64(s.params.MaxFreshStakePerBlock) - int64(s.params.TicketsPerBlock)) * intervalSize
+	A := -int64(s.params.TicketsPerBlock) * intervalSize
+	B := (int64(s.params.MaxFreshStakePerBlock) - int64(s.params.TicketsPerBlock)) * intervalSize
 
 	// Pool velocity (not used in this version)
 	//poolDelta := p - c
@@ -78,7 +78,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	// computed price delta.
 	//pctChange := s1 / 100 * m * del
 	//n := float64(curDiff) * (1.0 + pctChange) * accelPrice
-	n := float64(curDiff) * (float64(c) / float64(t+1280)) * accelPrice
+	n := float64(curDiff) * ((float64(c+int64(len(s.immatureTickets))) / float64(t+B+A)) * accelPrice)
 
 	// Enforce minimum and maximum prices
 	pMax := int64(s.tip.totalSupply) / int64(s.params.TicketPoolSize)
