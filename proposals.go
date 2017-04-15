@@ -6,7 +6,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/davecgh/dcrstakesim/internal/tickettreap"
 )
@@ -51,14 +50,14 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 
 	// Useful ticket counts are A (-5 * 144) and B (15 * 144)
 	// A := -int64(s.params.TicketsPerBlock) * intervalSize
-	// B := (int64(s.params.MaxFreshStakePerBlock) - int64(s.params.TicketsPerBlock)) * intervalSize
+	//B := (int64(s.params.MaxFreshStakePerBlock) - int64(s.params.TicketsPerBlock)) * intervalSize
 
 	// Pool velocity (not used in this version)
-	// poolDelta := c - p
-	// slowDown := 1 - math.Abs(float64(poolDelta)) / float64(B+A)
+	//poolDelta := p - c
+	accelPrice := float64(c) / float64(p) // 1 - float64(poolDelta)/float64(4*B)
 
 	// Pool force (multiple of target pool size, signed)
-	del := float64(c-t) / float64(t)
+	//del := float64(c-t) /	 float64(t)
 	// del /= float64(s.params.MaxFreshStakePerBlock)
 
 	// Price velocity damper (always positive) - A large change in price from
@@ -68,26 +67,30 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	// and slower to adapt to big events.
 	//
 	// Magnitude of price change as a percent of previous price.
-	absPriceDeltaLast := math.Abs(float64(curDiff-q) / float64(q))
+	//absPriceDeltaLast := math.Abs(float64(curDiff-q) / float64(q))
 	// Mapped onto (0,1] by an exponential decay
-	m := math.Exp(-absPriceDeltaLast * 8)
+	//m := math.Exp(-absPriceDeltaLast * 0)
 	// NOTE: make this stochastic by replacing the number 8 something like
 	// (rand.NewSource(s.tip.ticketPrice).Int63() >> 59)
 
 	// Scale directional (signed) pool force with the exponentially-mapped price
 	// derivative. Interpret the scalar input parameter as a percent of this
 	// computed price delta.
-	pctChange := s1 / 100 * m * del
-	n := float64(curDiff) * (1.0 + pctChange)
+	//pctChange := s1 / 100 * m * del
+	//n := float64(curDiff) * (1.0 + pctChange) * accelPrice
+	n := float64(curDiff) * (float64(c) / float64(t+1280)) * accelPrice
 
-	// Enforce minimum price
+	// Enforce minimum and maximum prices
+	pMax := int64(s.tip.totalSupply) / int64(s.params.TicketPoolSize)
 	price := int64(n)
 	if price < altMinDiff {
 		price = altMinDiff
+	} else if price > pMax {
+		price = pMax
 	}
 
 	// Verbose info
-	fmt.Println(c, c-t, m, curDiff, q, absPriceDeltaLast, pctChange, price)
+	fmt.Println(c, c-t, curDiff, q, (float64(c) / float64(t+1280)), accelPrice, price)
 
 	return price
 }
