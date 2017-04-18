@@ -74,12 +74,12 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	// Pool size change is on [A,B] (i.e. [-720,1440] for mainnet)
 	poolDelta := float64(p - c)
 	// Compute fraction
-	poolDelta = 1 - poolDelta/float64(B)/8.0
+	poolDelta = 1 - poolDelta/float64(B)/4.0
 	// allow convergence
 	if math.Abs(poolDelta-1) < 0.05 {
 		poolDelta = 1
 	}
-	// no change -> 1, fall by 720 -> 1.5, increase by 1440 -> 0.5
+	// no change -> 1, fall by 720 -> 1.25, increase by 1440 -> 0.75
 
 	// Pool force (multiple of target pool size, signed)
 	del := float64(c-t) / float64(t)
@@ -94,7 +94,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	// Magnitude of price change as a percent of previous price.
 	absPriceDeltaLast := math.Abs(float64(curDiff-q) / float64(q))
 	// Mapped onto (0,1] by an exponential decay
-	m := math.Exp(-absPriceDeltaLast * 8) // m = 0.5 ~= exp((10% delta) *-8)
+	m := math.Exp(-absPriceDeltaLast * 2) // m = 80% ~= exp((10% delta) *-2)
 	// NOTE: make this stochastic by replacing the number 8 something like
 	// (rand.NewSource(s.tip.ticketPrice).Int63() >> 59)
 
@@ -115,7 +115,7 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 
 	// Verbose info
 	c -= int64(len(s.immatureTickets))
-	fmt.Println(c, c-t-1280, m, poolDelta, curDiff, q, absPriceDeltaLast, pctChange, price)
+	fmt.Println(c, c-t+1280, m, poolDelta, curDiff, q, absPriceDeltaLast, pctChange, price)
 
 	return price
 }
