@@ -72,14 +72,14 @@ func (s *simulator) calcNextStakeDiffProposalJ() int64 {
 	//
 	// Option 2: fraction of max possible change
 	// Pool size change is on [A,B] (i.e. [-720,1440] for mainnet)
-	poolDelta := float64(p - c)
+	poolDelta := float64(c - p)
 	// Compute fraction
-	poolDelta = 1 - poolDelta/float64(B)/4.0
+	poolDelta = 1 + poolDelta/float64(B)/4.0
 	// allow convergence
 	if math.Abs(poolDelta-1) < 0.05 {
 		poolDelta = 1
 	}
-	// no change -> 1, fall by 720 -> 1.25, increase by 1440 -> 0.75
+	// no change -> 1, fall by 720 -> 0.75, increase by 1440 -> 1.25
 
 	// Pool force (multiple of target pool size, signed)
 	del := float64(c-t) / float64(t)
